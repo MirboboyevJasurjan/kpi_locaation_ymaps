@@ -1,19 +1,17 @@
 let center = [41, 69];
+let placemark;
 
 function init() {
     let map = new ymaps.Map('map-test', {
         center: center,
-        zoom: 20
+        zoom: 17
     });
 
-    let placemark = new ymaps.Placemark(center, {}, {
-        iconLayout: 'default#image',
-        iconImageHref: 'https://www.flaticon.com/free-icon/placeholder_684908?term=map&page=1&position=3&origin=search&related_id=684908',
-        iconImageSize: [40, 40],
-        iconImageOffset: [-19, -44]
+    placemark = new ymaps.Placemark(center, {}, {
+        preset: 'islands#blueDotIcon', // Default Yandex Maps icon
     });
 
-    // map.controls.remove('geolocationControl');
+    map.controls.remove('geolocationControl');
     map.controls.remove('searchControl');
     map.controls.remove('trafficControl');
     map.controls.remove('typeSelector');
@@ -22,8 +20,6 @@ function init() {
     map.controls.remove('rulerControl');
 
     map.geoObjects.add(placemark);
-
-
 
     // Event listener for the "Get Location" button
     document.getElementById('getLocationButton').addEventListener('click', function() {
@@ -39,13 +35,22 @@ function init() {
                     // Update the map with the user's location
                     map.setCenter(userLocation);
                     placemark.geometry.setCoordinates(userLocation);
+
+                    // Reverse geocode to get the address
+                    ymaps.geocode(userLocation).then(function(res) {
+                        const firstGeoObject = res.geoObjects.get(0);
+                        const address = firstGeoObject.getAddressLine();
+
+                        // Display the address on the page
+                        document.getElementById('address').textContent = address;
+                    });
                 },
                 function(error) {
-                    console.error("Foydalanuvchi ma'lmotlarini olishni iloji bo'lmadi: ", error);
+                    console.error("Error getting user location:", error);
                 }
             );
         } else {
-            console.error("Geolakatsiya browser tomonidan qo'llab quvvatlanmaydi.");
+            console.error("Geolocation is not supported by this browser.");
         }
     });
 }
